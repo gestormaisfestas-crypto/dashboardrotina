@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Financeiro Pessoal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0e;
+    --surface: #13151a;
+    --surface2: #1c1f27;
+    --border: #252830;
+    --text: #f0f2f7;
+    --muted: #6b7280;
+    --green: #22c55e;
+    --green-dim: #15803d22;
+    --red: #ef4444;
+    --red-dim: #ef444422;
+    --yellow: #f59e0b;
+    --yellow-dim: #f59e0b22;
+    --blue: #3b82f6;
+    --blue-dim: #3b82f622;
+    --purple: #a855f7;
+    --accent: #22c55e;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  .light {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --surface2: #eef0f5;
+    --border: #e2e5ed;
+    --text: #0f1117;
+    --muted: #6b7280;
+    --green-dim: #dcfce7;
+    --red-dim: #fee2e2;
+    --yellow-dim: #fef3c7;
+    --blue-dim: #dbeafe;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    transition: background .3s, color .3s;
+    overflow-x: hidden;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(12px);
+  }
+  .topbar-logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .topbar-logo span { color: var(--green); }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .theme-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: all .2s;
+  }
+  .theme-btn:active { transform: scale(.9); }
+  .month-selector {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 12px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; cursor: pointer; outline: none;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    padding: 80px 16px 100px;
+    max-width: 480px; margin: 0 auto;
+  }
+
+  /* ── HERO CARD ── */
+  .hero-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, #22c55e18 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .hero-value { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+  .hero-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .saldo-row { display: flex; gap: 12px; }
+  .saldo-pill {
+    flex: 1; padding: 12px 14px; border-radius: var(--radius-sm);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .saldo-pill.green { background: var(--green-dim); }
+  .saldo-pill.red { background: var(--red-dim); }
+  .saldo-pill-label { font-size: 11px; color: var(--muted); }
+  .saldo-pill-value { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+  .saldo-pill.green .saldo-pill-value { color: var(--green); }
+  .saldo-pill.red .saldo-pill-value { color: var(--red); }
+
+  /* META PROGRESS */
+  .meta-section { margin-top: 20px; }
+  .meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .meta-label { font-size: 12px; color: var(--muted); }
+  .meta-pct { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--yellow); }
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--yellow), var(--green));
+    transition: width .8s cubic-bezier(.34,1.56,.64,1);
+  }
+  .meta-values { display: flex; justify-content: space-between; margin-top: 6px; }
+  .meta-curr { font-size: 12px; color: var(--text); font-weight: 500; }
+  .meta-goal { font-size: 12px; color: var(--muted); }
+
+  /* ── SECTION ── */
+  .section-title {
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; color: var(--muted);
+    margin: 24px 0 12px;
+  }
+
+  /* ── ACTION BTNS ── */
+  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .action-btn {
+    padding: 16px; border-radius: var(--radius); border: none; cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px; text-align: left;
+    transition: transform .15s, opacity .15s;
+  }
+  .action-btn:active { transform: scale(.97); opacity: .9; }
+  .action-btn.entrada { background: var(--green-dim); }
+  .action-btn.saida { background: var(--red-dim); }
+  .action-btn.parcela { background: var(--blue-dim); }
+  .action-btn.invest { background: var(--yellow-dim); }
+  .action-icon { font-size: 22px; margin-bottom: 4px; }
+  .action-label { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .action-btn.entrada .action-label { color: var(--green); }
+  .action-btn.saida .action-label { color: var(--red); }
+  .action-btn.parcela .action-label { color: var(--blue); }
+  .action-btn.invest .action-label { color: var(--yellow); }
+  .action-sub { font-size: 11px; color: var(--muted); }
+
+  /* ── CARDS GRID ── */
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .mini-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .mini-card-icon { font-size: 18px; margin-bottom: 8px; }
+  .mini-card-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .mini-card-value { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; }
+
+  /* ── CATEGORY BARS ── */
+  .cat-list { display: flex; flex-direction: column; gap: 10px; }
+  .cat-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .cat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .cat-name { font-size: 13px; font-weight: 500; }
+  .cat-value { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--red); }
+  .cat-bar { height: 4px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .cat-fill { height: 100%; border-radius: 99px; background: var(--red); opacity: .6; transition: width .6s ease; }
+
+  /* ── PARCELAMENTOS ── */
+  .parc-list { display: flex; flex-direction: column; gap: 10px; }
+  .parc-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .parc-left { flex: 1; }
+  .parc-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .parc-detail { font-size: 12px; color: var(--muted); }
+  .parc-right { text-align: right; }
+  .parc-value { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--blue); }
+  .parc-progr { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .parc-bar { height: 3px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+  .parc-fill { height: 100%; border-radius: 99px; background: var(--blue); }
+
+  /* ── INVESTIMENTOS ── */
+  .inv-list { display: flex; flex-direction: column; gap: 10px; }
+  .inv-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .inv-name { font-size: 14px; font-weight: 600; }
+  .inv-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .inv-badge {
+    padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600;
+    background: var(--green-dim); color: var(--green);
+  }
+  .inv-badge.neg { background: var(--red-dim); color: var(--red); }
+  .inv-row { display: flex; gap: 16px; }
+  .inv-stat { flex: 1; }
+  .inv-stat-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .inv-stat-value { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: #00000088; backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 480px; padding: 24px 20px 40px;
+    transform: translateY(100%); transition: transform .35s cubic-bezier(.34,1.2,.64,1);
+    max-height: 90dvh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 20px; }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+  .form-input, .form-select {
+    width: 100%; padding: 14px 16px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--surface2);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+    outline: none; transition: border .2s;
+    -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn {
+    width: 100%; padding: 16px; border-radius: var(--radius); border: none;
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; margin-top: 8px; transition: transform .15s, opacity .15s;
+    letter-spacing: .3px;
+  }
+  .submit-btn:active { transform: scale(.98); opacity: .9; }
+  .submit-btn.entrada { background: var(--green); color: #000; }
+  .submit-btn.saida { background: var(--red); color: #fff; }
+  .submit-btn.parcela { background: var(--blue); color: #fff; }
+  .submit-btn.neutral { background: var(--yellow); color: #000; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; transition: opacity .2s; padding: 4px 0;
+  }
+  .nav-item:active { opacity: .7; }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 10px; color: var(--muted); font-weight: 500; }
+  .nav-item.active .nav-label { color: var(--accent); }
+  .nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(--green)); }
+
+  /* ── TABS ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 99px;
+    padding: 12px 20px; font-size: 14px; font-weight: 500; z-index: 300;
+    opacity: 0; transition: all .3s; white-space: nowrap; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── SHEET CONFIG ── */
+  .config-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  }
+  .config-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .config-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .config-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .config-num {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--accent);
+    color: #000; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .config-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .config-text code {
+    background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--text);
+  }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+
+  /* SHIMMER */
+  .shimmer {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">meu<span>$</span></div>
+  <div class="topbar-right">
+    <select class="month-selector" id="monthSel" onchange="loadData()">
+      <option value="1">Jan</option><option value="2">Fev</option>
+      <option value="3">Mar</option><option value="4" selected>Abr</option>
+      <option value="5">Mai</option><option value="6">Jun</option>
+      <option value="7">Jul</option><option value="8">Ago</option>
+      <option value="9">Set</option><option value="10">Out</option>
+      <option value="11">Nov</option><option value="12">Dez</option>
+    </select>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TAB: HOME -->
+  <div class="tab-content active" id="tab-home">
+
+    <!-- HERO -->
+    <div class="hero-card">
+      <div class="hero-label">Saldo do Mês</div>
+      <div class="hero-value" id="heroSaldo">R$ 0,00</div>
+      <div class="hero-sub" id="heroMes">Abril 2026</div>
+      <div class="saldo-row">
+        <div class="saldo-pill green">
+          <div class="saldo-pill-label">↑ Entradas</div>
+          <div class="saldo-pill-value" id="heroEntrada">R$ 0</div>
+        </div>
+        <div class="saldo-pill red">
+          <div class="saldo-pill-label">↓ Saídas</div>
+          <div class="saldo-pill-value" id="heroSaida">R$ 0</div>
+        </div>
+      </div>
+
+      <!-- META 100K -->
+      <div class="meta-section">
+        <div class="meta-header">
+          <div class="meta-label">🎯 Meta R$ 100.000</div>
+          <div class="meta-pct" id="metaPct">0%</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="metaBar" style="width:0%"></div></div>
+        <div class="meta-values">
+          <div class="meta-curr" id="metaCurr">R$ 0</div>
+          <div class="meta-goal">R$ 100.000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="section-title">Lançar</div>
+    <div class="action-row">
+      <button class="action-btn entrada" onclick="openModal('entrada')">
+        <div class="action-icon">💰</div>
+        <div class="action-label">Entrada</div>
+        <div class="action-sub">Salário, freelance...</div>
+      </button>
+      <button class="action-btn saida" onclick="openModal('saida')">
+        <div class="action-icon">💸</div>
+        <div class="action-label">Saída</div>
+        <div class="action-sub">Compras, contas...</div>
+      </button>
+      <button class="action-btn parcela" onclick="openModal('parcela')">
+        <div class="action-icon">💳</div>
+        <div class="action-label">Parcelamento</div>
+        <div class="action-sub">Compra parcelada</div>
+      </button>
+      <button class="action-btn invest" onclick="openModal('invest')">
+        <div class="action-icon">📈</div>
+        <div class="action-label">Investimento</div>
+        <div class="action-sub">Caixinha, BTC...</div>
+      </button>
+    </div>
+
+    <!-- RESUMO CATEGORIAS -->
+    <div class="section-title">Gastos por Categoria</div>
+    <div class="cat-list" id="catList">
+      <div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Configure o Google Sheets<br>para ver os dados aqui</div></div>
+    </div>
+
+  </div><!-- /tab-home -->
+
+  <!-- TAB: PARCELAMENTOS -->
+  <div class="tab-content" id="tab-parcelas">
+    <div class="section-title">Parcelamentos Ativos</div>
+    <div class="parc-list" id="parcList">
+      <div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Nenhum parcelamento ativo<br>cadastrado ainda</div></div>
+    </div>
+
+    <div class="section-title" style="margin-top:24px">Vencendo Este Mês</div>
+    <div class="cards-grid">
+      <div class="mini-card">
+        <div class="mini-card-icon">💳</div>
+        <div class="mini-card-label">Total parcelas</div>
+        <div class="mini-card-value" id="parcTotal" style="color:var(--blue)">R$ 0</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-icon">📦</div>
+        <div class="mini-card-label">Compras ativas</div>
+        <div class="mini-card-value" id="parcQtd" style="color:var(--purple)">0</div>
+      </div>
+    </div>
+
+    <button class="submit-btn parcela" style="margin-top:8px" onclick="openModal('parcela')">+ Nova compra parcelada</button>
+  </div>
+
+  <!-- TAB: INVESTIMENTOS -->
+  <div class="tab-content" id="tab-invest">
+    <div class="section-title">Patrimônio Total</div>
+    <div class="hero-card" style="margin-bottom:16px">
+      <div class="hero-label">Total investido</div>
+      <div class="hero-value" id="invTotal" style="color:var(--yellow)">R$ 0,00</div>
+      <div class="hero-sub">Caixinhas + Bitcoin</div>
+      <div class="meta-section">
+        <div class="meta-header">
+          <div class="meta-label">🎯 Meta R$ 100.000</div>
+          <div class="meta-pct" id="metaPct2">0%</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="metaBar2" style="width:0%"></div></div>
+        <div class="meta-values">
+          <div class="meta-curr" id="metaCurr2">R$ 0</div>
+          <div class="meta-goal">R$ 100.000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Caixinhas</div>
+    <div class="inv-list" id="invCaixinhas">
+      <div class="empty"><div class="empty-icon">💜</div><div class="empty-text">Configure o Google Sheets<br>para ver rendimentos</div></div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px">Bitcoin</div>
+    <div class="inv-list" id="invBTC">
+      <div class="empty"><div class="empty-icon">₿</div><div class="empty-text">Configure o Google Sheets<br>para ver cotação</div></div>
+    </div>
+  </div>
+
+  <!-- TAB: CONFIG -->
+  <div class="tab-content" id="tab-config">
+    <div class="section-title">Configuração</div>
+
+    <div class="config-card">
+      <div class="config-title">🔗 Conectar Google Sheets</div>
+      <div class="config-sub">Siga os passos para conectar sua planilha a este app</div>
+
+      <div class="config-step">
+        <div class="config-num">1</div>
+        <div class="config-text">Abra sua planilha no Google Sheets e vá em <strong>Extensões → Apps Script</strong></div>
+      </div>
+      <div class="config-step">
+        <div class="config-num">2</div>
+        <div class="config-text">Cole o código Apps Script abaixo e clique em <strong>Implantar → Novo implantação → App da Web</strong>. Acesso: <strong>Qualquer pessoa</strong></div>
+      </div>
+      <div class="config-step">
+        <div class="config-num">3</div>
+        <div class="config-text">Copie a URL gerada e cole aqui em baixo</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">URL do Apps Script</label>
+        <input class="form-input" id="sheetUrl" placeholder="https://script.google.com/macros/s/..." 
+               value="" oninput="saveConfig()">
+      </div>
+      <button class="submit-btn neutral" onclick="testConnection()">Testar Conexão</button>
+    </div>
+
+    <div class="config-card">
+      <div class="config-title">📋 Código Apps Script</div>
+      <div class="config-sub">Cole este código no editor de script da sua planilha</div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;font-size:11px;font-family:monospace;color:var(--muted);line-height:1.6;overflow-x:auto;white-space:pre">
+function doGet(e) {
+  return handleRequest(e);
+}
+function doPost(e) {
+  return handleRequest(e);
+}
+function handleRequest(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var action = e.parameter.action || 
+               (e.postData ? 
+                JSON.parse(e.postData.contents).action 
+                : '');
+  var data = e.postData ? 
+             JSON.parse(e.postData.contents) : {};
+  var result = {};
+  
+  if (action === 'getResumo') {
+    result = getResumo(ss, data.mes, data.ano);
+  } else if (action === 'addEntrada') {
+    result = addEntrada(ss, data);
+  } else if (action === 'addSaida') {
+    result = addSaida(ss, data);
+  } else if (action === 'addParcela') {
+    result = addParcela(ss, data);
+  } else if (action === 'getParcelas') {
+    result = getParcelas(ss, data.mes);
+  } else if (action === 'getInvestimentos') {
+    result = getInvestimentos(ss);
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getResumo(ss, mes, ano) {
+  var wsIn = ss.getSheetByName('ENTRADAS');
+  var wsOut = ss.getSheetByName('SAÍDAS');
+  var entradas = 0, saidas = 0;
+  var cats = {};
+  
+  var dataIn = wsIn.getRange(4,1,300,8).getValues();
+  dataIn.forEach(function(r) {
+    if (r[1] instanceof Date) {
+      if (r[1].getMonth()+1 == mes && r[1].getFullYear() == ano) {
+        entradas += r[5] || 0;
+      }
+    }
+  });
+  
+  var dataOut = wsOut.getRange(4,1,300,9).getValues();
+  dataOut.forEach(function(r) {
+    if (r[1] instanceof Date) {
+      if (r[1].getMonth()+1 == mes && r[1].getFullYear() == ano) {
+        var val = r[5] || 0;
+        saidas += val;
+        var cat = r[3] || 'Outros';
+        cats[cat] = (cats[cat] || 0) + val;
+      }
+    }
+  });
+  
+  return {entradas:entradas, saidas:saidas, 
+          saldo:entradas-saidas, categorias:cats};
+}
+
+function addEntrada(ss, d) {
+  var ws = ss.getSheetByName('ENTRADAS');
+  var last = ws.getLastRow() + 1;
+  ws.getRange(last,2).setValue(new Date(d.data));
+  ws.getRange(last,3).setValue(d.descricao);
+  ws.getRange(last,4).setValue(d.categoria);
+  ws.getRange(last,5).setValue(d.forma);
+  ws.getRange(last,6).setValue(d.valor);
+  ws.getRange(last,7).setValue(d.status || 'Pago');
+  return {ok:true};
+}
+
+function addSaida(ss, d) {
+  var ws = ss.getSheetByName('SAÍDAS');
+  var last = ws.getLastRow() + 1;
+  ws.getRange(last,2).setValue(new Date(d.data));
+  ws.getRange(last,3).setValue(d.descricao);
+  ws.getRange(last,4).setValue(d.categoria);
+  ws.getRange(last,5).setValue(d.forma);
+  ws.getRange(last,6).setValue(d.valor);
+  ws.getRange(last,8).setValue(d.status || 'Pago');
+  return {ok:true};
+}
+
+function addParcela(ss, d) {
+  var ws = ss.getSheetByName('PARCELAMENTOS');
+  var last = ws.getLastRow() + 1;
+  ws.getRange(last,2).setValue(d.descricao);
+  ws.getRange(last,3).setValue(d.categoria);
+  ws.getRange(last,4).setValue(d.cartao);
+  ws.getRange(last,5).setValue(new Date(d.data));
+  ws.getRange(last,6).setValue(d.total);
+  ws.getRange(last,7).setValue(d.parcelas);
+  return {ok:true};
+}
+
+function getParcelas(ss, mes) {
+  var ws = ss.getSheetByName('PARCELAMENTOS');
+  var data = ws.getRange(5,1,30,11).getValues();
+  var result = [];
+  data.forEach(function(r) {
+    if (r[1] && r[6] > 0) {
+      result.push({
+        desc: r[1], cat: r[2], cartao: r[3],
+        dataInicio: r[4], total: r[5],
+        nParcelas: r[6], pagas: r[8] || 0,
+        valorParc: r[5]/r[6]
+      });
+    }
+  });
+  return {parcelas: result};
+}
+
+function getInvestimentos(ss) {
+  var ws = ss.getSheetByName('INVESTIMENTOS');
+  var caixinhas = ws.getRange(4,1,6,8).getValues();
+  var btc = ws.getRange(13,1,8,8).getValues();
+  return {caixinhas: caixinhas, btc: btc};
+}</div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-title">ℹ️ Sobre</div>
+      <div class="config-sub">meu$ v1.0 — App financeiro pessoal conectado ao Google Sheets. Modo escuro/claro, lançamentos rápidos, parcelamentos e investimentos.</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="switchTab('home', this)">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">Início</div>
+  </div>
+  <div class="nav-item" onclick="switchTab('parcelas', this)">
+    <div class="nav-icon">💳</div>
+    <div class="nav-label">Parcelas</div>
+  </div>
+  <div class="nav-item" onclick="switchTab('invest', this)">
+    <div class="nav-icon">📈</div>
+    <div class="nav-label">Invest.</div>
+  </div>
+  <div class="nav-item" onclick="switchTab('config', this)">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-label">Config</div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL ENTRADA -->
+<div class="modal-overlay" id="modal-entrada">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 Nova Entrada</div>
+    <div class="form-group">
+      <label class="form-label">Valor (R$)</label>
+      <input class="form-input" id="in-valor" type="number" inputmode="decimal" placeholder="0,00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrição</label>
+      <input class="form-input" id="in-desc" type="text" placeholder="Ex: Salário de Abril">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input class="form-input" id="in-data" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <select class="form-select" id="in-cat">
+          <option>Salário</option><option>Freelance</option>
+          <option>Dividendos</option><option>Aluguel Recebido</option>
+          <option>Venda de Bem</option><option>Renda Extra</option><option>Outros</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Forma de Recebimento</label>
+      <select class="form-select" id="in-forma">
+        <option>PIX</option><option>Cartão de Crédito MP</option>
+        <option>Cartão de Crédito NUBANK</option><option>Transferência</option>
+        <option>Dinheiro</option><option>Outro</option>
+      </select>
+    </div>
+    <button class="submit-btn entrada" onclick="submitEntrada()">Registrar Entrada</button>
+  </div>
+</div>
+
+<!-- MODAL SAÍDA -->
+<div class="modal-overlay" id="modal-saida">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💸 Nova Saída</div>
+    <div class="form-group">
+      <label class="form-label">Valor (R$)</label>
+      <input class="form-input" id="out-valor" type="number" inputmode="decimal" placeholder="0,00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrição</label>
+      <input class="form-input" id="out-desc" type="text" placeholder="Ex: Supermercado">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input class="form-input" id="out-data" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="out-status">
+          <option>Pago</option><option>Pendente</option><option>Agendado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Categoria</label>
+      <select class="form-select" id="out-cat">
+        <option>Moradia</option><option>Alimentação</option><option>Transporte</option>
+        <option>Saúde</option><option>Academia</option><option>Lazer / Entretenimento</option>
+        <option>Roupas / Vestuário</option><option>Assinaturas</option>
+        <option>Investimentos</option><option>Viagens</option>
+        <option>Presentes</option><option>Pet</option><option>Outros</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Forma de Pagamento</label>
+      <select class="form-select" id="out-forma">
+        <option>PIX</option><option>Cartão de Crédito MP</option>
+        <option>Cartão de Crédito NUBANK</option><option>Cartão de Débito</option>
+        <option>Dinheiro</option><option>Boleto</option><option>Débito Automático</option>
+      </select>
+    </div>
+    <button class="submit-btn saida" onclick="submitSaida()">Registrar Saída</button>
+  </div>
+</div>
+
+<!-- MODAL PARCELA -->
+<div class="modal-overlay" id="modal-parcela">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💳 Nova Compra Parcelada</div>
+    <div class="form-group">
+      <label class="form-label">Descrição</label>
+      <input class="form-input" id="parc-desc" type="text" placeholder="Ex: TV Samsung 55">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Valor Total (R$)</label>
+        <input class="form-input" id="parc-total" type="number" inputmode="decimal" placeholder="0,00" oninput="calcParc()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nº Parcelas</label>
+        <input class="form-input" id="parc-n" type="number" inputmode="numeric" placeholder="12" oninput="calcParc()">
+      </div>
+    </div>
+    <div class="form-group" style="background:var(--blue-dim);border-radius:var(--radius-sm);padding:12px;text-align:center">
+      <div style="font-size:12px;color:var(--muted)">Valor de cada parcela</div>
+      <div id="parc-calc" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--blue)">R$ —</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">1ª Parcela em</label>
+        <input class="form-input" id="parc-data" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cartão</label>
+        <select class="form-select" id="parc-cartao">
+          <option>Cartão de Crédito NUBANK</option>
+          <option>Cartão de Crédito MP</option>
+          <option>Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Categoria</label>
+      <select class="form-select" id="parc-cat">
+        <option>Moradia</option><option>Alimentação</option><option>Transporte</option>
+        <option>Saúde</option><option>Academia</option><option>Lazer / Entretenimento</option>
+        <option>Roupas / Vestuário</option><option>Assinaturas</option>
+        <option>Viagens</option><option>Presentes</option><option>Outros</option>
+      </select>
+    </div>
+    <button class="submit-btn parcela" onclick="submitParcela()">Cadastrar Parcelamento</button>
+  </div>
+</div>
+
+<!-- MODAL INVEST -->
+<div class="modal-overlay" id="modal-invest">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📈 Atualizar Investimento</div>
+    <div style="background:var(--yellow-dim);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--yellow);font-weight:500">💡 Os investimentos são gerenciados diretamente na planilha Google Sheets — aba INVESTIMENTOS e HIST. CAIXINHAS.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">O que deseja registrar?</label>
+      <select class="form-select" id="inv-tipo">
+        <option value="deposito">Depósito em Caixinha</option>
+        <option value="retirada">Retirada de Caixinha</option>
+        <option value="btc">Compra de Bitcoin</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Valor (R$)</label>
+      <input class="form-input" id="inv-valor" type="number" inputmode="decimal" placeholder="0,00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observação</label>
+      <input class="form-input" id="inv-obs" type="text" placeholder="Opcional">
+    </div>
+    <button class="submit-btn neutral" onclick="closeModal('invest');showToast('📋 Abra o Google Sheets para registrar manualmente')">Entendido</button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SHEET_URL_KEY = 'meuapp_sheet_url';
+const HARDCODED_URL = 'https://script.google.com/macros/s/AKfycbwPS9k2Hg0OQemFaqx8BZOBm9SmkTNIjVW3QGx1PxOeTyYExhAXM3K68bTn4AqVEo0tLA/exec';
+const THEME_KEY = 'meuapp_theme';
+const META_GOAL = 100000;
+
+let isDark = true;
+let currentTab = 'home';
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // tema
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme === 'light') { isDark = false; document.body.classList.add('light'); document.getElementById('themeBtn').textContent = '☀️'; }
+
+  // URL salva
+  const savedUrl = localStorage.getItem(SHEET_URL_KEY);
+  if (savedUrl) document.getElementById('sheetUrl').value = savedUrl;
+
+  // data padrão = hoje
+  const today = new Date().toISOString().split('T')[0];
+  ['in-data','out-data','parc-data'].forEach(id => { const el = document.getElementById(id); if(el) el.value = today; });
+
+  // mês atual
+  const m = new Date().getMonth() + 1;
+  document.getElementById('monthSel').value = m;
+
+  loadData();
+
+  // fechar modal ao clicar fora
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  });
+});
+
+// ── TEMA ──────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+  currentTab = tab;
+  if (tab === 'parcelas') loadParcelas();
+  if (tab === 'invest') loadInvestimentos();
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(type) {
+  document.getElementById('modal-' + type).classList.add('open');
+}
+function closeModal(type) {
+  document.getElementById('modal-' + type).classList.remove('open');
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+function saveConfig() {
+  localStorage.setItem(SHEET_URL_KEY, document.getElementById('sheetUrl').value);
+  // auto-reload data when URL changes
+}
+function getSheetUrl() { return HARDCODED_URL || localStorage.getItem(SHEET_URL_KEY) || ''; }
+function testConnection() {
+  const url = getSheetUrl();
+  if (!url) { showToast('❌ Cole a URL do Apps Script primeiro'); return; }
+  showToast('🔄 Testando conexão...');
+  callSheet({ action: 'getResumo', mes: new Date().getMonth()+1, ano: 2026 })
+    .then(() => { showToast('✅ Conectado!'); loadData(); })
+    .catch(() => showToast('❌ Erro na conexão. Verifique a URL'));
+}
+
+// ── API CALL ──────────────────────────────────────────────────────────────────
+function callSheet(data) {
+  const url = getSheetUrl();
+  if (!url) return Promise.reject('no url');
+  const params = new URLSearchParams({ payload: JSON.stringify(data) });
+  return fetch(url + '?' + params.toString(), { method: 'GET', redirect: 'follow' })
+    .then(r => r.json());
+}
+
+// ── FORMATAR ─────────────────────────────────────────────────────────────────
+function fmtBRL(v) {
+  return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtBRLshort(v) {
+  v = Number(v || 0);
+  if (v >= 1000) return 'R$ ' + (v/1000).toFixed(1).replace('.',',') + 'k';
+  return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 0 });
+}
+
+// ── NOMES DOS MESES ───────────────────────────────────────────────────────────
+const MESES_NOME = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────────
+function loadData() {
+  const mes = parseInt(document.getElementById('monthSel').value);
+  document.getElementById('heroMes').textContent = MESES_NOME[mes] + ' 2026';
+
+  const url = getSheetUrl();
+  if (!url) { renderDemoData(mes); return; }
+
+  callSheet({ action: 'getResumo', mes, ano: 2026 })
+    .then(data => { renderResumo(data); showToast('✅ Dados atualizados!'); })
+    .catch(() => renderDemoData(mes));
+}
+
+function renderDemoData(mes) {
+  // Mostrar zeros limpos já que planilha foi zerada
+  renderResumo({ entradas: 0, saidas: 0, saldo: 0, categorias: {} });
+}
+
+function renderResumo(data) {
+  const saldo = data.saldo || 0;
+  document.getElementById('heroSaldo').textContent = fmtBRL(saldo);
+  document.getElementById('heroSaldo').style.color = saldo >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('heroEntrada').textContent = fmtBRLshort(data.entradas);
+  document.getElementById('heroSaida').textContent = fmtBRLshort(data.saidas);
+
+  // meta (usa investimentos como proxy — pode ajustar)
+  updateMeta(data.patrimonio || 0);
+
+  // categorias
+  const cats = data.categorias || {};
+  const catList = document.getElementById('catList');
+  const entries = Object.entries(cats).filter(([,v]) => v > 0).sort(([,a],[,b]) => b - a);
+
+  if (!entries.length) {
+    catList.innerHTML = '<div class="empty"><div class="empty-icon">✨</div><div class="empty-text">Nenhum gasto registrado<br>neste mês ainda</div></div>';
+    return;
+  }
+
+  const maxVal = entries[0][1];
+  catList.innerHTML = entries.map(([cat, val]) => `
+    <div class="cat-item">
+      <div class="cat-row">
+        <div class="cat-name">${cat}</div>
+        <div class="cat-value">${fmtBRL(val)}</div>
+      </div>
+      <div class="cat-bar"><div class="cat-fill" style="width:${(val/maxVal*100).toFixed(0)}%"></div></div>
+    </div>
+  `).join('');
+}
+
+function updateMeta(curr) {
+  const pct = Math.min((curr / META_GOAL * 100), 100).toFixed(1);
+  ['', '2'].forEach(s => {
+    const bar = document.getElementById('metaBar' + s);
+    const pctEl = document.getElementById('metaPct' + s);
+    const currEl = document.getElementById('metaCurr' + s);
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (currEl) currEl.textContent = fmtBRLshort(curr);
+  });
+}
+
+// ── PARCELAS ──────────────────────────────────────────────────────────────────
+function calcParc() {
+  const total = parseFloat(document.getElementById('parc-total').value) || 0;
+  const n = parseInt(document.getElementById('parc-n').value) || 0;
+  document.getElementById('parc-calc').textContent = n > 0 ? fmtBRL(total/n) : 'R$ —';
+}
+
+function loadParcelas() {
+  const url = getSheetUrl();
+  if (!url) { renderParcelas([]); return; }
+  const mes = parseInt(document.getElementById('monthSel').value);
+  callSheet({ action: 'getParcelas', mes })
+    .then(data => renderParcelas(data.parcelas || []))
+    .catch(() => renderParcelas([]));
+}
+
+function renderParcelas(parcelas) {
+  const list = document.getElementById('parcList');
+  const ativas = parcelas.filter(p => p.nParcelas > p.pagas);
+
+  if (!ativas.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nenhum parcelamento ativo</div></div>';
+    document.getElementById('parcQtd').textContent = '0';
+    document.getElementById('parcTotal').textContent = 'R$ 0';
+    return;
+  }
+
+  let totalMes = 0;
+  list.innerHTML = ativas.map(p => {
+    const pct = ((p.pagas / p.nParcelas) * 100).toFixed(0);
+    totalMes += p.valorParc || 0;
+    return `
+      <div class="parc-item">
+        <div class="parc-left">
+          <div class="parc-name">${p.desc}</div>
+          <div class="parc-detail">${p.cartao} · ${p.cat}</div>
+          <div class="parc-bar"><div class="parc-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="parc-right">
+          <div class="parc-value">${fmtBRL(p.valorParc)}</div>
+          <div class="parc-progr">${p.pagas}/${p.nParcelas} pagas</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('parcQtd').textContent = ativas.length;
+  document.getElementById('parcTotal').textContent = fmtBRLshort(totalMes);
+}
+
+// ── INVESTIMENTOS ─────────────────────────────────────────────────────────────
+function loadInvestimentos() {
+  const url = getSheetUrl();
+  if (!url) { renderInvestimentos(null); return; }
+  callSheet({ action: 'getInvestimentos' })
+    .then(data => renderInvestimentos(data))
+    .catch(() => renderInvestimentos(null));
+}
+
+function renderInvestimentos(data) {
+  const caixDiv = document.getElementById('invCaixinhas');
+  const btcDiv = document.getElementById('invBTC');
+
+  if (!data) {
+    caixDiv.innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-text">Configure o Google Sheets<br>para ver os dados</div></div>';
+    btcDiv.innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-text">Configure o Google Sheets<br>para ver os dados</div></div>';
+    updateMeta(0);
+    return;
+  }
+
+  // Caixinhas
+  const caixinhas = (data.caixinhas || []).filter(r => r[0]);
+  if (caixinhas.length) {
+    let totalCaixa = 0;
+    caixDiv.innerHTML = caixinhas.map(r => {
+      const nome = r[0], inst = r[1], dep = r[3]||0, rend = r[4]||0, saldo = r[5]||0, pct = r[6]||0;
+      totalCaixa += saldo;
+      const pos = rend >= 0;
+      return `
+        <div class="inv-card">
+          <div class="inv-header">
+            <div><div class="inv-name">${nome}</div><div class="inv-type">${inst}</div></div>
+            <div class="inv-badge ${pos?'':'neg'}">${pos?'+':''}${(pct*100).toFixed(2)}%</div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-stat"><div class="inv-stat-label">Depositado</div><div class="inv-stat-value">${fmtBRLshort(dep)}</div></div>
+            <div class="inv-stat"><div class="inv-stat-label">Rendimento</div><div class="inv-stat-value" style="color:var(--green)">${fmtBRLshort(rend)}</div></div>
+            <div class="inv-stat"><div class="inv-stat-label">Saldo atual</div><div class="inv-stat-value" style="color:var(--yellow)">${fmtBRLshort(saldo)}</div></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    caixDiv.innerHTML = '<div class="empty"><div class="empty-icon">💜</div><div class="empty-text">Preencha as caixinhas na planilha</div></div>';
+  }
+
+  // Bitcoin
+  const btcRows = (data.btc || []).filter(r => r[2] > 0);
+  if (btcRows.length) {
+    let totalBtc = 0, totalInv = 0;
+    btcDiv.innerHTML = btcRows.map(r => {
+      const desc=r[1], qtd=r[2], precoComp=r[3], invst=r[4], precoAtual=r[5]||0, valAtual=r[6]||0, lucro=r[7]||0;
+      totalBtc += valAtual; totalInv += invst;
+      const pos = lucro >= 0;
+      return `
+        <div class="inv-card">
+          <div class="inv-header">
+            <div><div class="inv-name">₿ ${desc}</div><div class="inv-type">${qtd.toFixed(8)} BTC</div></div>
+            <div class="inv-badge ${pos?'':'neg'}">${pos?'▲':'▼'} ${fmtBRLshort(Math.abs(lucro))}</div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-stat"><div class="inv-stat-label">Preço compra</div><div class="inv-stat-value">${fmtBRLshort(precoComp)}</div></div>
+            <div class="inv-stat"><div class="inv-stat-label">Preço atual</div><div class="inv-stat-value" style="color:var(--orange)">${fmtBRLshort(precoAtual)}</div></div>
+            <div class="inv-stat"><div class="inv-stat-label">Valor atual</div><div class="inv-stat-value" style="color:var(--yellow)">${fmtBRLshort(valAtual)}</div></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // atualiza meta com patrimônio total
+    const totalCaixaVal = caixinhas.reduce((s,r) => s+(r[5]||0), 0);
+    updateMeta(totalCaixaVal + totalBtc);
+  } else {
+    btcDiv.innerHTML = '<div class="empty"><div class="empty-icon">₿</div><div class="empty-text">Preencha o Bitcoin na planilha</div></div>';
+  }
+}
+
+// ── SUBMIT FORMS ──────────────────────────────────────────────────────────────
+function submitEntrada() {
+  const valor = parseFloat(document.getElementById('in-valor').value);
+  if (!valor) { showToast('❌ Informe o valor'); return; }
+  const payload = {
+    action: 'addEntrada',
+    valor, descricao: document.getElementById('in-desc').value || 'Entrada',
+    data: document.getElementById('in-data').value,
+    categoria: document.getElementById('in-cat').value,
+    forma: document.getElementById('in-forma').value,
+    status: 'Pago'
+  };
+  closeModal('entrada');
+  showToast('⏳ Salvando...');
+  callSheet(payload)
+    .then(() => { showToast('✅ Entrada registrada!'); loadData(); })
+    .catch(() => showToast('⚠️ Configure o Sheets para salvar'));
+}
+
+function submitSaida() {
+  const valor = parseFloat(document.getElementById('out-valor').value);
+  if (!valor) { showToast('❌ Informe o valor'); return; }
+  const payload = {
+    action: 'addSaida',
+    valor, descricao: document.getElementById('out-desc').value || 'Saída',
+    data: document.getElementById('out-data').value,
+    categoria: document.getElementById('out-cat').value,
+    forma: document.getElementById('out-forma').value,
+    status: document.getElementById('out-status').value
+  };
+  closeModal('saida');
+  showToast('⏳ Salvando...');
+  callSheet(payload)
+    .then(() => { showToast('✅ Saída registrada!'); loadData(); })
+    .catch(() => showToast('⚠️ Configure o Sheets para salvar'));
+}
+
+function submitParcela() {
+  const total = parseFloat(document.getElementById('parc-total').value);
+  const n = parseInt(document.getElementById('parc-n').value);
+  if (!total || !n) { showToast('❌ Preencha valor e parcelas'); return; }
+  const payload = {
+    action: 'addParcela',
+    descricao: document.getElementById('parc-desc').value || 'Compra parcelada',
+    total, parcelas: n,
+    data: document.getElementById('parc-data').value,
+    cartao: document.getElementById('parc-cartao').value,
+    categoria: document.getElementById('parc-cat').value
+  };
+  closeModal('parcela');
+  showToast('⏳ Salvando...');
+  callSheet(payload)
+    .then(() => { showToast('✅ Parcelamento cadastrado!'); loadParcelas(); })
+    .catch(() => showToast('⚠️ Configure o Sheets para salvar'));
+}
+</script>
+</body>
+</html>
