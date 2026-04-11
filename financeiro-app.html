@@ -882,7 +882,7 @@ function saveConfig() {
   localStorage.setItem(SHEET_URL_KEY, document.getElementById('sheetUrl').value);
   // auto-reload data when URL changes
 }
-function getSheetUrl() { return HARDCODED_URL || localStorage.getItem(SHEET_URL_KEY) || ''; }
+function getSheetUrl() { return 'https://script.google.com/macros/s/AKfycbwPS9k2Hg0OQemFaqx8BZOBm9SmkTNIjVW3QGx1PxOeTyYExhAXM3K68bTn4AqVEo0tLA/exec'; }
 function testConnection() {
   const url = getSheetUrl();
   if (!url) { showToast('❌ Cole a URL do Apps Script primeiro'); return; }
