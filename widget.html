@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>J&P Money — Widget</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', Arial, sans-serif;
+    background: #0a0b0e;
+    color: #f0f2f7;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .widget {
+    background: linear-gradient(135deg, #13151a 0%, #1c1f27 100%);
+    border: 1px solid #252830;
+    border-radius: 24px;
+    padding: 24px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+  }
+  .logo { font-size: 13px; color: #6b7280; margin-bottom: 16px; letter-spacing: 2px; text-transform: uppercase; }
+  .logo span { color: #22c55e; }
+  .saldo-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .saldo-value { font-size: 42px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 4px; }
+  .mes { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+  .row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .pill { flex: 1; padding: 12px; border-radius: 12px; }
+  .pill.g { background: #15803d22; }
+  .pill.r { background: #ef444422; }
+  .pill-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+  .pill-value { font-size: 18px; font-weight: 700; }
+  .pill.g .pill-value { color: #22c55e; }
+  .pill.r .pill-value { color: #ef4444; }
+  .updated { font-size: 11px; color: #374151; }
+  .btn {
+    display: inline-block; margin-top: 16px; padding: 12px 24px;
+    background: #22c55e; color: #000; border-radius: 99px;
+    text-decoration: none; font-size: 14px; font-weight: 700;
+  }
+  .loading { color: #6b7280; font-size: 14px; }
+  .error { color: #ef4444; font-size: 13px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="logo">J<span>&</span>P Money</div>
+  
+  <div id="content">
+    <div class="loading">Carregando...</div>
+  </div>
+  
+  <a href="SUBSTITUIR_PELA_URL_DO_APP" class="btn">Abrir app</a>
+</div>
+
+<script>
+// INSTRUÇÕES:
+// 1. Substitua https://script.google.com/macros/s/AKfycbxzdBOkUzxj8mF0LKLjBucFMhAq28ZThs_ilMNzCkuMPUL1lEKoWSfh15xVjbW0XbvrMw/exec pela URL do seu Apps Script
+// 2. Substitua SUBSTITUIR_PELA_URL_DO_APP pela URL do app principal
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzdBOkUzxj8mF0LKLjBucFMhAq28ZThs_ilMNzCkuMPUL1lEKoWSfh15xVjbW0XbvrMw/exec';
+
+function fmtBRL(v) {
+  return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtShort(v) {
+  v = Number(v||0);
+  if(v >= 1000) return 'R$ ' + (v/1000).toFixed(1).replace('.', ',') + 'k';
+  return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:0});
+}
+
+function loadWidget() {
+  const params = new URLSearchParams({payload: JSON.stringify({action:'getResumo', mes: new Date().getMonth()+1, ano: 2026})});
+  fetch(SCRIPT_URL + '?' + params.toString(), {method:'GET', redirect:'follow'})
+    .then(r => r.json())
+    .then(data => {
+      const s = data.saldo || 0;
+      const cor = s >= 0 ? '#22c55e' : '#ef4444';
+      const MESES = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      const mes = new Date().getMonth()+1;
+      document.getElementById('content').innerHTML = `
+        <div class="saldo-label">Saldo de ${MESES[mes]}</div>
+        <div class="saldo-value" style="color:${cor}">${fmtBRL(s)}</div>
+        <div class="row">
+          <div class="pill g"><div class="pill-label">Entradas</div><div class="pill-value">${fmtShort(data.entradas)}</div></div>
+          <div class="pill r"><div class="pill-label">Saídas</div><div class="pill-value">${fmtShort(data.saidas)}</div></div>
+        </div>
+        <div class="updated">Atualizado às ${new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</div>
+      `;
+    })
+    .catch(() => {
+      // Try cache
+      const cached = localStorage.getItem('jp_widget_cache');
+      if(cached) {
+        const d = JSON.parse(cached);
+        document.getElementById('content').innerHTML = d.html + '<div class="error">📡 Offline — dados do cache</div>';
+      } else {
+        document.getElementById('content').innerHTML = '<div class="error">Sem conexão</div>';
+      }
+    });
+}
+
+loadWidget();
+setInterval(loadWidget, 60000); // Refresh every minute
+</script>
+</body>
+</html>
